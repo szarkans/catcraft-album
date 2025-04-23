@@ -19,6 +19,13 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      - name: Resize oversized images
+        uses: petems/image-resizer-gh-action@master
+        with:
+          target: '.'
+          widthLimit: 1920
+          heightLimit: 1080
+
       - name: Compress Images
         uses: calibreapp/image-actions@main
         with:
