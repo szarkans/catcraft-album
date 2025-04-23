@@ -1,4 +1,5 @@
-name: Optimize & Resize Images
+# .github/workflows/optimize-images.yml
+name: 📷 Optimize & Resize Images
 
 on:
   push:
@@ -9,39 +10,35 @@ on:
       - 'season*/**/*.webp'
       - '.github/workflows/optimize-images.yml'
 
-# Даем GITHUB_TOKEN право на запись в репозиторий
 permissions:
-  contents: write
+  contents: write  # чтобы можно было коммитить оптимизированные файлы
 
 jobs:
   optimize:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) Выкачиваем репо с токеном, чтобы дальнейшие шаги могли писать
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          # по умолчанию токен = GITHUB_TOKEN
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2) Resize: только большие (ширина или высота > 1920×1080)
-      - name: Resize oversized images
-        uses: petems/image-resizer-gh-action@master
-        with:
-          target: '.'
-          widthLimit: 1920
-          heightLimit: 1080
+    - name: Resize oversized images
+      uses: petems/image-resizer-gh-action@master
+      with:
+        target: '.'
+        widthLimit: 1920
+        heightLimit: 1080
 
-      # 3) Compress: даем токен, чтобы экшен смог коммитить изменения
-      - name: Compress images
-        uses: calibreapp/image-actions@main
-        with:
-          # именно так у этого экшена называется входной параметр
-          githubToken: ${{ secrets.GITHUB_TOKEN }}  # :contentReference[oaicite:0]{index=0}
+    - name: Compress images (Calibre)
+      id: calibre
+      uses: calibreapp/image-actions@main
+      with:
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        compressOnly: true    # <— важный флаг для запуска на push
 
-      # 4) Коммитим только если что-то изменилось
-      - name: Commit optimized images
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'chore: optimize & resize images'
-          file_pattern: 'season*/**/*.jpg,season*/**/*.jpeg,season*/**/*.png,season*/**/*.webp'
+    - name: Commit optimized images
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: 'chore: optimize & resize images'
+        file_pattern: 'season*/**/*.jpg,season*/**/*.png,season*/**/*.webp'
