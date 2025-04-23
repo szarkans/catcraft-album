@@ -1,51 +1,27 @@
-# .github/workflows/optimize-images.yml
-name: 📷 Optimize & Resize Images
-
 on:
   push:
+    branches: [main]
     paths:
-      - 'season*/**/*.jpg'
-      - 'season*/**/*.jpeg'
-      - 'season*/**/*.png'
-      - 'season*/**/*.webp'
-      - '.github/workflows/optimize-images.yml'
-
-permissions:
-  contents: write  # чтобы можно было коммитить оптимизированные файлы
+      - '**/*.{jpg,jpeg,png,webp}'
 
 jobs:
   optimize:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
-    # - name: Resize oversized images
-    #   uses: petems/image-resizer-gh-action@master
-    #   with:
-    #     target: '.'
-    #     widthLimit: 1920
-    #     heightLimit: 1080
+      - name: Compress images (push-only)
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
 
-    - name: Compress images (Calibre)
-      id: calibre
-      uses: calibreapp/image-actions@main
-      with:
-        githubToken: ${{ secrets.GITHUB_TOKEN }}
-        compressOnly: true    # <— важный флаг для запуска на push
-
-    - name: Force git to notice changes
-      run: |
-        git add -A
-        git status
-        git commit -m "[ci skip] оптимизировал изображения" || echo "No changes to commit"
-
-    # - name: Commit optimized images
-    #   uses: stefanzweifel/git-auto-commit-action@v4
-    #   with:
-    #     commit_message: '[ci skip] optimize & resize images'
-    #     file_pattern: |
-    #         **/season*/**/*.{jpg,jpeg,png,webp}
+      - name: Commit & push compressed images
+        uses: EndBug/add-and-commit@v4
+        with:
+          add: '**/*.{jpg,jpeg,png,webp}'
+          message: '[ci skip] auto-compress images'
