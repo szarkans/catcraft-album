@@ -1,27 +1,47 @@
+# .github/workflows/optimize-images.yml
+name: 📷 Optimize & Resize Images
+
 on:
   push:
     branches: [main]
-    paths:
-      - '**/*.{jpg,jpeg,png,webp}'
+
+permissions:
+  contents: write   # разрешаем пушить изменения
 
 jobs:
   optimize:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0           # забираем всю историю
+          persist-credentials: true  # сохраняем токен для пуша
 
-      - name: Compress images (push-only)
-        id: calibre
+      - name: Resize images >1920×1080
+        id: resize
+        uses: petems/image-resizer-gh-action@master
+        with:
+          target: 'season*'         # папки-сезоны в корне
+          widthLimit: 1920          # максимальная ширина
+          heightLimit: 1080         # максимальная высота
+
+      - name: Compress images
         uses: calibreapp/image-actions@main
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          compressOnly: true
+          # можно дополнительно задать качество:
+          # jpeg:
+          #   quality: '80'
+          # png:
+          #   quality: '80-90'
+          # webp:
+          #   quality: '80'
 
-      - name: Commit & push compressed images
+      - name: Commit and push optimized images
         uses: EndBug/add-and-commit@v4
         with:
-          add: '**/*.{jpg,jpeg,png,webp}'
-          message: '[ci skip] auto-compress images'
+          add: 'season*/**/*.{jpg,jpeg,png,webp}'
+          message: '[ci skip] optimize & resize images'
+  
