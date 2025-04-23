@@ -41,10 +41,11 @@ jobs:
       run: |
         git add -A
         git status
+        git commit -m "[ci skip] оптимизировал изображения" || echo "No changes to commit"
 
-    - name: Commit optimized images
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: '[ci skip] optimize & resize images'
-        file_pattern: |
-            **/season*/**/*.{jpg,jpeg,png,webp}
+    # - name: Commit optimized images
+    #   uses: stefanzweifel/git-auto-commit-action@v4
+    #   with:
+    #     commit_message: '[ci skip] optimize & resize images'
+    #     file_pattern: |
+    #         **/season*/**/*.{jpg,jpeg,png,webp}
