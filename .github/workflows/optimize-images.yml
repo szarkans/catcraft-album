@@ -37,8 +37,14 @@ jobs:
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         compressOnly: true    # <— важный флаг для запуска на push
 
+    - name: Debug
+      run: |
+        git status
+        git diff --name-only
+
     - name: Commit optimized images
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: 'chore: optimize & resize images'
-        file_pattern: 'season*/**/*.jpg,season*/**/*.png,season*/**/*.webp'
+        commit_message: '[ci skip] optimize & resize images'
+        file_pattern: |
+            **/season*/**/*.{jpg,jpeg,png,webp}
