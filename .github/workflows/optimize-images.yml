@@ -1,23 +1,26 @@
-name: Compress Images
+name: Optimize images and PR
+
 on:
   push:
+    branches:
+      - main
     paths:
-      - '**/*.svg'
-      - '**/*.png'
-      - '**/*.jpg'
-      - '**/*.jpeg'
-      - '**/*.gif'
-      - '**/*.webp'
-      - '**/*.avif'
+      - "**.png"
+      - "**.jpe?g"
+      - "**.svg"
+      - "**.gif"
+
 jobs:
-  optimize:
+  optimize-images:
     runs-on: ubuntu-latest
-    permissions: write-all
     steps:
-      - uses: actions/checkout@v4
-      - name: Compress Images
-        uses: cadamsdev/image-optimizer-action@v1
+      - uses: actions/checkout@v2 
+      - name: Optimize images
+        id: optimize-images
+        uses: Doist/optimize-images-action@v2
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          export-webp: true
-          export-avif: true
+          commit-message: "Optimize images (lossless)"
+          delete-branch: true
+          body: ${{ steps.optimize-images.outputs.summary }}
