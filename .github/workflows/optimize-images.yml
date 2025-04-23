@@ -23,12 +23,12 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Resize oversized images
-      uses: petems/image-resizer-gh-action@master
-      with:
-        target: '.'
-        widthLimit: 1920
-        heightLimit: 1080
+    # - name: Resize oversized images
+    #   uses: petems/image-resizer-gh-action@master
+    #   with:
+    #     target: '.'
+    #     widthLimit: 1920
+    #     heightLimit: 1080
 
     - name: Compress images (Calibre)
       id: calibre
@@ -37,10 +37,10 @@ jobs:
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         compressOnly: true    # <— важный флаг для запуска на push
 
-    - name: Debug
+    - name: Force git to notice changes
       run: |
+        git add -A
         git status
-        git diff --name-only
 
     - name: Commit optimized images
       uses: stefanzweifel/git-auto-commit-action@v4
