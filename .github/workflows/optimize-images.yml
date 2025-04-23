@@ -1,42 +1,34 @@
-name: Optimize & Resize Images
+# .github/workflows/optimize-images.yml
+name: 📷 Optimize & Resize Images
 
-# Запускаем при любом пуше в папку images/
 on:
   push:
     paths:
-      - '/**'
+      - 'season*/**'                           # любые изменения внутри season1/, season2/…
       - '.github/workflows/optimize-images.yml'
 
 jobs:
   optimize:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) Выкачиваем код
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false  # чтобы GITHUB_TOKEN не использовался в шагах оптимизации
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
 
-      # 2) Resize: уменьшаем все файлы, у которых ширина или высота превышает 1920×1080
-      - name: Resize oversized images
-        uses: petems/image-resizer-gh-action@master
-        with:
-          target: 'images'      # корневая папка с картинками
-          widthLimit: 1920      # максимальная ширина
-          heightLimit: 1080     # максимальная высота
-        # Под капотом он дергает `mogrify` и уменьшает только те файлы, что больше лимита :contentReference[oaicite:0]{index=0}
+    - name: Resize oversized images
+      uses: petems/image-resizer-gh-action@master
+      with:
+        target: '.'                             # сканируем весь репо, но затрагиваются только картинки
+        widthLimit: 1920                        # макс. ширина
+        heightLimit: 1080                       # макс. высота
 
-      # 3) Compress: сжимаем без потери качества (JPEG/PNG/WebP)
-      - name: Compress images
-        uses: calibreapp/image-actions@main
-        with:
-          # никаких дополнительных настроек обычно не нужно — работает «из коробки»
-        # Эта экшн-программа пропускает картинки через libvips, делает near-lossless compression :contentReference[oaicite:1]{index=1}
+    - name: Compress images
+      uses: calibreapp/image-actions@main       # lossless-компрессия JPEG/PNG/WebP
 
-      # 4) Коммитим всё обратно, если что-то изменилось
-      - name: Commit optimized images
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'chore: оптимизировать и подрезать изображения'
-          file_pattern: '/**'
-          # по умолчанию закоммитит только если есть изменения
+    - name: Commit optimized images
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: 'chore: optimize & resize images'
+        file_pattern: 'season*/**'               # коммитим любые изменения в season*/…
